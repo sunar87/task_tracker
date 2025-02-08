@@ -209,6 +209,7 @@ dmypy.json
 .vscode/
 # Рабочее пространство VSCode
 *.code-workspace
+*.json
 
 # Локальная история для Visual Studio Code
 .history/

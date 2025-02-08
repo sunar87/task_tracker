@@ -1,19 +1,20 @@
 import json
 import datetime as dt
+import os
 
 from utils import datetime_handler
 
 
 class Task():
 
-    def __init__(self, task_id, task_title):
+    def __init__(self, task_id, task_title, status='Active', created_at=None):
         self.task_id = task_id
         self.task_title = task_title
-        self.status = 'Active'
-        self.created_at = dt.datetime.now()
+        self.status = status
+        self.created_at = created_at if created_at else dt.datetime.now()
 
     def __str__(self):
-        return f"Task(id={self.task_id}, title='{self.task_title}, status='{self.status}, created_at='{self.created_at}')"
+        return f"Task(id={self.task_id}, title='{self.task_title}', status='{self.status}', created_at='{self.created_at}')"
 
 
 class TaskManager():
@@ -41,32 +42,41 @@ class TaskManager():
                 break
         self.save_to_file()
 
-    def change_task(self, task_id):
+    def change_task(self, task_id, new_title):
         for task in self.tasks:
             if task.task_id == task_id:
-                task.task_title = input('Введите измененную тему: ')
+                task.task_title = new_title
                 break
         self.save_to_file()
 
     def all_tasks(self):
-        for task in self.tasks:
-            print(task)
+        return self.tasks
 
     def save_to_file(self):
-        with open("tasks.json", "w") as file:
+        with open('tasks.json', 'w') as file:
             json.dump([task.__dict__ for task in self.tasks],
                       file, indent=4, default=datetime_handler)
 
     def load_from_file(self):
         try:
-            with open("tasks.json", "r") as file:
-                data = json.load(file)
-                self.tasks = [
-                    Task(task["task_id"],
-                         task["task_title"],
-                         task["created_at"]) for task in data
+            if (os.path.exists('tasks.json')
+                    and os.path.getsize('tasks.json') > 0):
+                with open('tasks.json', 'r') as file:
+                    data = json.load(file)
+                    self.tasks = [
+                        Task(
+                            task['task_id'],
+                            task['task_title'],
+                            task.get('status', 'Active'),
+                            dt.datetime.fromisoformat(task.get('created_at'))
+                        )
+                        for task in data
                     ]
-                if self.tasks:
-                    self.next_id = max(task.task_id for task in self.tasks) + 1
-        except FileNotFoundError:
+                    if self.tasks:
+                        self.next_id = max(task.task_id for
+                                           task in self.tasks) + 1
+            else:
+                self.tasks = []
+        except Exception as e:
+            print(f'Ошибка при загрузке файла: {e}')
             self.tasks = []

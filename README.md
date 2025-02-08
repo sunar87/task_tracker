@@ -34,3 +34,7 @@ cd ваш-репозиторий
 ```bash
 python main.py
 ```
+
+## Автор
+
+<b>Войтов Семён</b> — [https://github.com/sunar87]
